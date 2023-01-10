@@ -5,3 +5,8 @@ export type User = {
   age: number;
   isDeleted: boolean;
 };
+
+export type GetUserReqData = {
+  limit?: number;
+  substring?: string;
+}

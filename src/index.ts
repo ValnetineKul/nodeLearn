@@ -2,7 +2,7 @@ import express from "express";
 import NodeCache from "node-cache";
 import { randomUUID } from "crypto";
 import { userSchema } from "./routes/schemas";
-import { User } from "./types";
+import { GetUserReqData, User } from "./types";
 import BodyParser from "body-parser";
 import { validateSchema } from "./utils";
 
@@ -19,6 +19,7 @@ app.use(BodyParser.json());
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
+
 let mockId = 1;
 app.post("/user", validateSchema(userSchema), (req, res) => {
   const user = req.body;  
@@ -34,12 +35,24 @@ app.post("/user", validateSchema(userSchema), (req, res) => {
   cache.set("users", newUsers);
 
   res.status(200).json({
-    message: "user added"
+    message: "user added",
+    user,
   });
 });
 
-app.get("/user", (_, res) => {
-  const users = cache.get("users");
+app.get("/user", (req, res) => {
+  const reqData: GetUserReqData = req.body;
+  let users = cache.get<User[]>("users");
+
+  if (reqData.substring) {
+    const regexp = new RegExp(reqData.substring?.toLocaleLowerCase(), "ig");
+    users = users?.filter(({ login }) => login.match(regexp));
+  }
+
+  if (reqData.limit) {
+    users = users?.slice(0, reqData.limit);
+  }
+
   res.status(200).json(users);
 });
 
