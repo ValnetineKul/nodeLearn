@@ -2,6 +2,7 @@ import express, { Application } from "express";
 import { Controller } from "./interfaces";
 import bodyParser from "body-parser";
 import { Routes } from "./types";
+import { sequelize } from "./sequelize";
 
 class App {
   public app: Application;
@@ -15,8 +16,16 @@ class App {
   }
 
   public listen(port: number) {
-    this.app.listen(port, () => {
+    this.app.listen(port, async () => {
       console.log(`App listening on the port ${port}`);
+
+      try {
+        await sequelize.authenticate();
+        
+        console.log("DB SUCCESS");
+      } catch (error) {
+        console.log("DB ERROR");
+      }
     });
   }
 
